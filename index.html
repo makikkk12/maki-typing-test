@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAKI TP</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#378ADD">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f4f3ee;
+    --card-bg: #ffffff;
+    --text-primary: #2c2c2a;
+    --text-secondary: #5f5e5a;
+    --text-muted: #888780;
+    --panel-bg: #f1efe8;
+    --border: #d3d1c7;
+    --border-strong: #b4b2a9;
+    --accent: #378ADD;
+    --correct: #0F6E56;
+    --incorrect: #A32D2D;
+    --incorrect-bg: #FAECE7;
+    --shadow: rgba(0,0,0,0.08);
+  }
+  body.theme-dark {
+    --bg: #1c1c1a;
+    --card-bg: #26221e;
+    --text-primary: #f1efe8;
+    --text-secondary: #b4b2a9;
+    --text-muted: #888780;
+    --panel-bg: #322e29;
+    --border: #454037;
+    --border-strong: #5f5a50;
+    --accent: #6db3f2;
+    --correct: #5dcaa5;
+    --incorrect: #f09595;
+    --incorrect-bg: #4a1b0c;
+    --shadow: rgba(0,0,0,0.4);
+  }
+  body.theme-sepia {
+    --bg: #ece1cf;
+    --card-bg: #f7efe1;
+    --text-primary: #4a3826;
+    --text-secondary: #7a6248;
+    --text-muted: #9c8666;
+    --panel-bg: #ede0c8;
+    --border: #d8c4a0;
+    --border-strong: #c2a978;
+    --accent: #b5651d;
+    --correct: #4b6a3f;
+    --incorrect: #9c3b2c;
+    --incorrect-bg: #f0d8c8;
+    --shadow: rgba(74,56,38,0.15);
+  }
+  body.theme-ocean {
+    --bg: #e6f1fb;
+    --card-bg: #ffffff;
+    --text-primary: #042c53;
+    --text-secondary: #185fa5;
+    --text-muted: #5f8fc2;
+    --panel-bg: #d5e9fa;
+    --border: #b5d4f4;
+    --border-strong: #85b7eb;
+    --accent: #0c447c;
+    --correct: #0F6E56;
+    --incorrect: #A32D2D;
+    --incorrect-bg: #FAECE7;
+    --shadow: rgba(4,44,83,0.12);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: background 0.2s, color 0.2s;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: 0 2px 12px var(--shadow);
+    transition: background 0.2s;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 1.25rem;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  .header-row h1 { margin: 0; }
+  #settingsBtn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+  }
+  #settingsPanel {
+    display: none;
+    background: var(--panel-bg);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.25rem;
+    transition: background 0.2s;
+  }
+  #settingsPanel.open { display: block; }
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .setting-row:last-child { margin-bottom: 0; }
+  .setting-row label {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .setting-row select {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-primary);
+  }
+  .toggle-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .toggle-group button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .toggle-group button.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+  .stats span b {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  #textDisplay {
+    font-size: 24px;
+    line-height: 2;
+    padding: 1rem;
+    background: var(--panel-bg);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    height: 170px;
+    overflow: hidden;
+    transition: background 0.2s;
+    cursor: text;
+  }
+  #textDisplay.focused {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  #typeInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: none;
+    opacity: 0;
+    overflow: hidden;
+  }
+  .actions {
+    margin-top: 14px;
+    text-align: center;
+  }
+  button {
+    font-size: 14px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  button:hover { background: var(--panel-bg); }
+  #msg {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    text-align: center;
+  }
+  .correct { color: var(--correct); }
+  .incorrect { color: var(--incorrect); background: var(--incorrect-bg); }
+  .cursor { border-left: 2px solid var(--accent); }
+  .pending { color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header-row">
+    <h1>Typing speed test</h1>
+    <button id="settingsBtn" aria-label="Settings" title="Settings">&#9881;</button>
+  </div>
+  <div id="settingsPanel">
+    <div class="setting-row">
+      <label>Duration</label>
+      <div class="toggle-group" id="durationGroup">
+        <button data-value="30">30s</button>
+        <button data-value="60">60s</button>
+        <button data-value="120" class="active">2 min</button>
+        <button data-value="300">5 min</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <label>Text size</label>
+      <div class="toggle-group" id="sizeGroup">
+        <button data-value="18">Small</button>
+        <button data-value="24" class="active">Medium</button>
+        <button data-value="30">Large</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <label>Word length</label>
+      <select id="difficultySelect">
+        <option value="any" selected>Mixed</option>
+        <option value="short">Short words</option>
+        <option value="long">Long words</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <label>Theme</label>
+      <div class="toggle-group" id="themeGroup">
+        <button data-value="light" class="active">Light</button>
+        <button data-value="dark">Dark</button>
+        <button data-value="sepia">Sepia</button>
+        <button data-value="ocean">Ocean</button>
+      </div>
+    </div>
+  </div>
+  <div class="stats">
+    <span>WPM: <b id="wpm">0</b></span>
+    <span>Accuracy: <b id="acc">100%</b></span>
+    <span>Time left: <b id="time">120</b>s</span>
+  </div>
+  <div id="textDisplay"></div>
+  <input id="typeInput" type="text" placeholder="Start typing to begin the test" autocomplete="off" autocorrect="off" spellcheck="false" />
+  <div class="actions">
+    <button id="restartBtn">New test</button>
+  </div>
+  <p id="msg">Tap the passage above, then start typing.</p>
+</div>
+<script>
+(function(){
+  var wordBank = ["time","people","water","world","family","student","country","problem","music","system","program","question","government","company","number","group","idea","fact","month","room","market","service","body","president","area","school","history","party","result","change","morning","reason","research","girl","guy","moment","air","teacher","force","education","science","level","office","door","health","art","type","evening","policy","road","form","relationship","story","issue","side","kind","four","head","picture","effort","law","case","hair","child","information","oil","effect","point","director","position","player","record","chance","voice","matter","lot","light","development","language","control","heart","nature","building","action","century","evidence","gas","author","order","piece","expert","hand","future","paper","term","color","home","interest","land","view","chair","condition","fish","cost","industry","figure","street","image","phone","court","hospital","memory","letter","garden","weather","dinner","design","travel","project","budget","dream","choice","danger","freedom","journey","harbor","forest","mountain","valley","desert","island","ocean","planet","engine","bridge","castle","mirror","window","pocket","button","needle","thread","hammer","ladder","basket","candle","blanket","pillow","kitchen","bicycle","umbrella","tunnel","volcano","glacier","meadow","orchard","harvest","festival","carnival","theater","museum","library","stadium","airport","station","factory","village","suburb"];
+
+  var shortWords = wordBank.filter(function(w){ return w.length <= 5; });
+  var longWords = wordBank.filter(function(w){ return w.length >= 7; });
+
+  var display = document.getElementById('textDisplay');
+  var input = document.getElementById('typeInput');
+  var wpmEl = document.getElementById('wpm');
+  var accEl = document.getElementById('acc');
+  var timeEl = document.getElementById('time');
+  var msgEl = document.getElementById('msg');
+  var restartBtn = document.getElementById('restartBtn');
+  var settingsBtn = document.getElementById('settingsBtn');
+  var settingsPanel = document.getElementById('settingsPanel');
+  var durationGroup = document.getElementById('durationGroup');
+  var sizeGroup = document.getElementById('sizeGroup');
+  var difficultySelect = document.getElementById('difficultySelect');
+  var themeGroup = document.getElementById('themeGroup');
+
+  var TOTAL_TIME = 120;
+  var WORDS_PER_SECOND_BUFFER = 3;
+  var difficulty = 'any';
+  var target = '';
+  var startTime = null;
+  var timerInterval = null;
+  var timeLeft = TOTAL_TIME;
+  var finished = false;
+
+  function currentWordList(){
+    if(difficulty === 'short') return shortWords;
+    if(difficulty === 'long') return longWords;
+    return wordBank;
+  }
+
+  function buildTarget(){
+    var list = currentWordList();
+    var wordCount = Math.max(40, TOTAL_TIME * WORDS_PER_SECOND_BUFFER);
+    var arr = [];
+    for(var i = 0; i < wordCount; i++){
+      arr.push(list[Math.floor(Math.random() * list.length)]);
+    }
+    return arr.join(' ');
+  }
+
+  function renderText(typed){
+    var html = '';
+    for(var i = 0; i < target.length; i++){
+      var ch = target[i];
+      if(i < typed.length){
+        var ok = typed[i] === ch;
+        html += '<span class="' + (ok ? 'correct' : 'incorrect') + '">' + ch + '</span>';
+      } else if(i === typed.length){
+        html += '<span class="cursor">' + ch + '</span>';
+      } else {
+        html += '<span class="pending">' + ch + '</span>';
+      }
+    }
+    display.innerHTML = html;
+    scrollToCursor();
+  }
+
+  function scrollToCursor(){
+    var cursorEl = display.querySelector('.cursor');
+    if(!cursorEl){
+      display.scrollTop = display.scrollHeight;
+      return;
+    }
+    var containerRect = display.getBoundingClientRect();
+    var cursorRect = cursorEl.getBoundingClientRect();
+    var offset = (cursorRect.top - containerRect.top) - (containerRect.height / 2);
+    display.scrollTop += offset;
+  }
+
+  function computeAccuracy(typed){
+    var correct = 0;
+    for(var i = 0; i < typed.length; i++){
+      if(typed[i] === target[i]) correct++;
+    }
+    return typed.length ? Math.round((correct / typed.length) * 100) : 100;
+  }
+
+  function finishTest(){
+    if(finished) return;
+    finished = true;
+    clearInterval(timerInterval);
+    input.disabled = true;
+    var typed = input.value;
+    var elapsedSeconds = TOTAL_TIME - timeLeft;
+    if(elapsedSeconds <= 0) elapsedSeconds = TOTAL_TIME;
+    var minutes = elapsedSeconds / 60;
+    var correctChars = 0;
+    for(var i = 0; i < typed.length; i++){
+      if(typed[i] === target[i]) correctChars++;
+    }
+    var wpm = Math.round((correctChars / 5) / minutes);
+    var acc = computeAccuracy(typed);
+    wpmEl.textContent = wpm;
+    accEl.textContent = acc + '%';
+    msgEl.textContent = 'Time up! ' + wpm + ' WPM at ' + acc + '% accuracy.';
+  }
+
+  function durationLabel(){
+    if(TOTAL_TIME === 60) return '1 minute';
+    if(TOTAL_TIME === 120) return '2 minutes';
+    if(TOTAL_TIME === 300) return '5 minutes';
+    return TOTAL_TIME + ' seconds';
+  }
+
+  function startTest(){
+    clearInterval(timerInterval);
+    target = buildTarget();
+    finished = false;
+    startTime = null;
+    timeLeft = TOTAL_TIME;
+    input.value = '';
+    input.disabled = false;
+    wpmEl.textContent = '0';
+    accEl.textContent = '100%';
+    timeEl.textContent = TOTAL_TIME;
+    msgEl.textContent = 'Tap the passage above, then start typing.';
+    renderText('');
+    input.focus();
+  }
+
+  input.addEventListener('input', function(){
+    if(finished) return;
+    var typed = input.value;
+
+    if(startTime === null){
+      startTime = performance.now();
+      timerInterval = setInterval(function(){
+        timeLeft--;
+        timeEl.textContent = Math.max(0, timeLeft);
+        var elapsedMinutes = (TOTAL_TIME - timeLeft) / 60;
+        if(elapsedMinutes > 0){
+          var typedNow = input.value;
+          var correctNow = 0;
+          for(var i = 0; i < typedNow.length; i++){
+            if(typedNow[i] === target[i]) correctNow++;
+          }
+          wpmEl.textContent = Math.round((correctNow / 5) / elapsedMinutes);
+        }
+        if(timeLeft <= 0){
+          finishTest();
+        }
+      }, 1000);
+    }
+
+    renderText(typed);
+    accEl.textContent = computeAccuracy(typed) + '%';
+
+    if(typed.length >= target.length){
+      finishTest();
+    }
+  });
+
+  settingsBtn.addEventListener('click', function(){
+    settingsPanel.classList.toggle('open');
+  });
+
+  function setActiveButton(group, btn){
+    var buttons = group.querySelectorAll('button');
+    for(var i = 0; i < buttons.length; i++){
+      buttons[i].classList.remove('active');
+    }
+    btn.classList.add('active');
+  }
+
+  durationGroup.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    TOTAL_TIME = parseInt(btn.getAttribute('data-value'), 10);
+    setActiveButton(durationGroup, btn);
+    startTest();
+  });
+
+  sizeGroup.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    var size = btn.getAttribute('data-value') + 'px';
+    display.style.fontSize = size;
+    setActiveButton(sizeGroup, btn);
+    scrollToCursor();
+  });
+
+  difficultySelect.addEventListener('change', function(){
+    difficulty = difficultySelect.value;
+    startTest();
+  });
+
+  themeGroup.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    document.body.classList.remove('theme-dark', 'theme-sepia', 'theme-ocean');
+    var value = btn.getAttribute('data-value');
+    if(value !== 'light'){
+      document.body.classList.add('theme-' + value);
+    }
+    setActiveButton(themeGroup, btn);
+  });
+
+  display.addEventListener('click', function(){
+    input.focus();
+  });
+
+  input.addEventListener('focus', function(){
+    display.classList.add('focused');
+  });
+
+  input.addEventListener('blur', function(){
+    display.classList.remove('focused');
+  });
+
+  restartBtn.addEventListener('click', startTest);
+  startTest();
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+
+window.addEventListener('load', function(){
+  fetch('/.netlify/functions/notify', { method: 'POST' }).catch(function(){});
+});
+</script>
+</body>
+</html>

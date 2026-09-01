@@ -1,6 +1,6 @@
 exports.handler = async function(event, context) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  var token = process.env.TELEGRAM_BOT_TOKEN;
+  var chatId = process.env.TELEGRAM_CHAT_ID;
 
   if (!token || !chatId) {
     return {
@@ -9,8 +9,10 @@ exports.handler = async function(event, context) {
     };
   }
 
+  var url = 'https://api.telegram.org/bot' + token + '/sendMessage';
+
   try {
-    const res = await fetch(https://api.telegram.org/bot${token}/sendMessage, {
+    var res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -20,7 +22,7 @@ exports.handler = async function(event, context) {
     });
 
     if (!res.ok) {
-      const errText = await res.text();
+      var errText = await res.text();
       return { statusCode: 502, body: JSON.stringify({ error: errText }) };
     }
 

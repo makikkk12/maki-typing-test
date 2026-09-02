@@ -1,4 +1,4 @@
-var CACHE_NAME = 'typing-test-v2';
+var CACHE_NAME = 'typing-test-v3';
 var FILES_TO_CACHE = [
   './',
   './index.html',

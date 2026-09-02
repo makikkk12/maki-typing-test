@@ -114,15 +114,31 @@
     font-size: 18px;
     line-height: 1;
   }
-  #settingsPanel {
+  #settingsOverlay {
     display: none;
-    background: var(--panel-bg);
-    border-radius: 10px;
-    padding: 1rem 1.1rem;
-    margin-bottom: 1.25rem;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #settingsOverlay.open { display: flex; }
+  #settingsPanel {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
     transition: background 0.2s;
   }
-  #settingsPanel.open { display: block; }
+  #settingsPanel h3 {
+    margin: 0 0 1.1rem;
+    font-size: 18px;
+  }
   .setting-row {
     display: flex;
     justify-content: space-between;
@@ -216,15 +232,115 @@
   .incorrect { color: var(--incorrect); background: var(--incorrect-bg); }
   .cursor { border-left: 2px solid var(--accent); }
   .pending { color: var(--text-muted); }
+
+  #resultsOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #resultsOverlay.open { display: flex; }
+  #resultsCard {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+  #resultsCard h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+  }
+  #resultsCard .highscore-banner {
+    display: none;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  #resultsCard .highscore-banner.show { display: block; }
+  .results-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 1.25rem 0;
+  }
+  .results-stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .results-stats .value {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .results-stats .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  #resultsBest {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+  }
+  #resultsCloseBtn {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    padding: 10px 24px;
+  }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="header-row">
-    <h1>Typing speed test</h1>
+    <h1>MAKI Typing test</h1>
     <button id="settingsBtn" aria-label="Settings" title="Settings">&#9881;</button>
   </div>
+  <div class="stats">
+    <span>WPM: <b id="wpm">0</b></span>
+    <span>Best: <b id="bestWpm">0</b></span>
+    <span>Accuracy: <b id="acc">100%</b></span>
+    <span>Time left: <b id="time">120</b>s</span>
+  </div>
+  <div id="textDisplay"></div>
+  <input id="typeInput" type="text" placeholder="Start typing to begin the test" autocomplete="off" autocorrect="off" spellcheck="false" />
+  <div class="actions">
+    <button id="restartBtn">New test</button>
+  </div>
+  <p id="msg">Tap the passage above, then start typing.</p>
+</div>
+
+<div id="resultsOverlay">
+  <div id="resultsCard">
+    <div class="highscore-banner" id="highscoreBanner">🎉 CONGRATULATIONS! New high score!</div>
+    <h2>Time's up!</h2>
+    <div class="results-stats">
+      <div>
+        <span class="value" id="resultWpm">0</span>
+        <span class="label">WPM</span>
+      </div>
+      <div>
+        <span class="value" id="resultAcc">0%</span>
+        <span class="label">Accuracy</span>
+      </div>
+    </div>
+    <div id="resultsBest">Best WPM for this duration: <b id="resultBest">0</b></div>
+    <button id="resultsCloseBtn">Try again</button>
+  </div>
+</div>
+
+<div id="settingsOverlay">
   <div id="settingsPanel">
+    <h3>Settings</h3>
     <div class="setting-row">
       <label>Duration</label>
       <div class="toggle-group" id="durationGroup">
@@ -259,18 +375,10 @@
         <button data-value="ocean">Ocean</button>
       </div>
     </div>
+    <div class="actions">
+      <button id="settingsCloseBtn">Done</button>
+    </div>
   </div>
-  <div class="stats">
-    <span>WPM: <b id="wpm">0</b></span>
-    <span>Accuracy: <b id="acc">100%</b></span>
-    <span>Time left: <b id="time">120</b>s</span>
-  </div>
-  <div id="textDisplay"></div>
-  <input id="typeInput" type="text" placeholder="Start typing to begin the test" autocomplete="off" autocorrect="off" spellcheck="false" />
-  <div class="actions">
-    <button id="restartBtn">New test</button>
-  </div>
-  <p id="msg">Tap the passage above, then start typing.</p>
 </div>
 <script>
 (function(){
@@ -282,16 +390,25 @@
   var display = document.getElementById('textDisplay');
   var input = document.getElementById('typeInput');
   var wpmEl = document.getElementById('wpm');
+  var bestWpmEl = document.getElementById('bestWpm');
   var accEl = document.getElementById('acc');
   var timeEl = document.getElementById('time');
   var msgEl = document.getElementById('msg');
   var restartBtn = document.getElementById('restartBtn');
   var settingsBtn = document.getElementById('settingsBtn');
+  var settingsOverlay = document.getElementById('settingsOverlay');
   var settingsPanel = document.getElementById('settingsPanel');
+  var settingsCloseBtn = document.getElementById('settingsCloseBtn');
   var durationGroup = document.getElementById('durationGroup');
   var sizeGroup = document.getElementById('sizeGroup');
   var difficultySelect = document.getElementById('difficultySelect');
   var themeGroup = document.getElementById('themeGroup');
+  var resultsOverlay = document.getElementById('resultsOverlay');
+  var resultsCloseBtn = document.getElementById('resultsCloseBtn');
+  var highscoreBanner = document.getElementById('highscoreBanner');
+  var resultWpm = document.getElementById('resultWpm');
+  var resultAcc = document.getElementById('resultAcc');
+  var resultBest = document.getElementById('resultBest');
 
   var TOTAL_TIME = 120;
   var WORDS_PER_SECOND_BUFFER = 3;
@@ -301,6 +418,76 @@
   var timerInterval = null;
   var timeLeft = TOTAL_TIME;
   var finished = false;
+
+  var SETTINGS_KEY = 'maki-tp-settings';
+
+  function saveSettings(){
+    var textSize = display.style.fontSize || '24px';
+    var themeClass = 'light';
+    if(document.body.classList.contains('theme-dark')) themeClass = 'dark';
+    else if(document.body.classList.contains('theme-sepia')) themeClass = 'sepia';
+    else if(document.body.classList.contains('theme-ocean')) themeClass = 'ocean';
+
+    var settings = {
+      duration: TOTAL_TIME,
+      textSize: textSize,
+      difficulty: difficulty,
+      theme: themeClass
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  function loadSettings(){
+    var raw = localStorage.getItem(SETTINGS_KEY);
+    if(!raw) return;
+    var settings;
+    try {
+      settings = JSON.parse(raw);
+    } catch(e){
+      return;
+    }
+
+    if(settings.duration){
+      TOTAL_TIME = settings.duration;
+      timeLeft = TOTAL_TIME;
+      var durBtn = durationGroup.querySelector('button[data-value="' + settings.duration + '"]');
+      if(durBtn) setActiveButtonQuiet(durationGroup, durBtn);
+    }
+
+    if(settings.textSize){
+      display.style.fontSize = settings.textSize;
+      var sizeValue = parseInt(settings.textSize, 10);
+      var sizeBtn = sizeGroup.querySelector('button[data-value="' + sizeValue + '"]');
+      if(sizeBtn) setActiveButtonQuiet(sizeGroup, sizeBtn);
+    }
+
+    if(settings.difficulty){
+      difficulty = settings.difficulty;
+      difficultySelect.value = settings.difficulty;
+    }
+
+    if(settings.theme){
+      document.body.classList.remove('theme-dark', 'theme-sepia', 'theme-ocean');
+      if(settings.theme !== 'light'){
+        document.body.classList.add('theme-' + settings.theme);
+      }
+      var themeBtn = themeGroup.querySelector('button[data-value="' + settings.theme + '"]');
+      if(themeBtn) setActiveButtonQuiet(themeGroup, themeBtn);
+    }
+  }
+
+  function highScoreKey(){
+    return 'maki-tp-highscore-' + TOTAL_TIME;
+  }
+
+  function getHighScore(){
+    var val = localStorage.getItem(highScoreKey());
+    return val ? parseInt(val, 10) : 0;
+  }
+
+  function setHighScore(wpm){
+    localStorage.setItem(highScoreKey(), String(wpm));
+  }
 
   function currentWordList(){
     if(difficulty === 'short') return shortWords;
@@ -373,6 +560,20 @@
     wpmEl.textContent = wpm;
     accEl.textContent = acc + '%';
     msgEl.textContent = 'Time up! ' + wpm + ' WPM at ' + acc + '% accuracy.';
+
+    var best = getHighScore();
+    var isNewHigh = wpm > best;
+    if(isNewHigh){
+      setHighScore(wpm);
+      best = wpm;
+      bestWpmEl.textContent = best;
+    }
+
+    resultWpm.textContent = wpm;
+    resultAcc.textContent = acc + '%';
+    resultBest.textContent = best;
+    highscoreBanner.classList.toggle('show', isNewHigh);
+    resultsOverlay.classList.add('open');
   }
 
   function durationLabel(){
@@ -391,9 +592,11 @@
     input.value = '';
     input.disabled = false;
     wpmEl.textContent = '0';
+    bestWpmEl.textContent = getHighScore();
     accEl.textContent = '100%';
     timeEl.textContent = TOTAL_TIME;
     msgEl.textContent = 'Tap the passage above, then start typing.';
+    resultsOverlay.classList.remove('open');
     renderText('');
     input.focus();
   }
@@ -431,7 +634,11 @@
   });
 
   settingsBtn.addEventListener('click', function(){
-    settingsPanel.classList.toggle('open');
+    settingsOverlay.classList.add('open');
+  });
+
+  settingsCloseBtn.addEventListener('click', function(){
+    settingsOverlay.classList.remove('open');
   });
 
   function setActiveButton(group, btn){
@@ -442,11 +649,16 @@
     btn.classList.add('active');
   }
 
+  function setActiveButtonQuiet(group, btn){
+    setActiveButton(group, btn);
+  }
+
   durationGroup.addEventListener('click', function(e){
     var btn = e.target.closest('button');
     if(!btn) return;
     TOTAL_TIME = parseInt(btn.getAttribute('data-value'), 10);
     setActiveButton(durationGroup, btn);
+    saveSettings();
     startTest();
   });
 
@@ -456,11 +668,13 @@
     var size = btn.getAttribute('data-value') + 'px';
     display.style.fontSize = size;
     setActiveButton(sizeGroup, btn);
+    saveSettings();
     scrollToCursor();
   });
 
   difficultySelect.addEventListener('change', function(){
     difficulty = difficultySelect.value;
+    saveSettings();
     startTest();
   });
 
@@ -473,6 +687,7 @@
       document.body.classList.add('theme-' + value);
     }
     setActiveButton(themeGroup, btn);
+    saveSettings();
   });
 
   display.addEventListener('click', function(){
@@ -488,6 +703,8 @@
   });
 
   restartBtn.addEventListener('click', startTest);
+  resultsCloseBtn.addEventListener('click', startTest);
+  loadSettings();
   startTest();
 })();
 

@@ -495,13 +495,39 @@
     return wordBank;
   }
 
+    function shuffleArray(arr){
+    var copy = arr.slice();
+    for(var i = copy.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = temp;
+    }
+    return copy;
+  }
+
   function buildTarget(){
     var list = currentWordList();
     var wordCount = Math.max(40, TOTAL_TIME * WORDS_PER_SECOND_BUFFER);
     var arr = [];
-    for(var i = 0; i < wordCount; i++){
-      arr.push(list[Math.floor(Math.random() * list.length)]);
+    var bag = [];
+    var lastWord = null;
+
+    while(arr.length < wordCount){
+      if(bag.length === 0){
+        bag = shuffleArray(list);
+        if(bag.length > 1 && bag[0] === lastWord){
+          var swapIdx = 1 + Math.floor(Math.random() * (bag.length - 1));
+          var tmp = bag[0];
+          bag[0] = bag[swapIdx];
+          bag[swapIdx] = tmp;
+        }
+      }
+      var word = bag.shift();
+      arr.push(word);
+      lastWord = word;
     }
+
     return arr.join(' ');
   }
 

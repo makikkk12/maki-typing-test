@@ -103,7 +103,11 @@
     margin-bottom: 1.25rem;
   }
   .header-row h1 { margin: 0; }
-  #settingsBtn {
+  .header-btns {
+    display: flex;
+    gap: 8px;
+  }
+  .icon-btn {
     width: 38px;
     height: 38px;
     padding: 0;
@@ -114,7 +118,7 @@
     font-size: 18px;
     line-height: 1;
   }
-  #settingsOverlay {
+  .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
@@ -125,25 +129,50 @@
     padding: 20px;
     box-sizing: border-box;
   }
-  #settingsOverlay.open { display: flex; }
-  #settingsPanel {
+  .modal-overlay.open { display: flex; }
+  #settingsPanel, #historyPanel, #leaderboardPanel {
     background: var(--card-bg);
     border-radius: 16px;
     padding: 1.5rem;
-    max-width: 420px;
+    max-width: 440px;
     width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
     box-shadow: 0 8px 30px rgba(0,0,0,0.25);
     transition: background 0.2s;
   }
-  #settingsPanel h3 {
-    margin: 0 0 1.1rem;
+  #settingsPanel h3, #historyPanel h3, #leaderboardPanel h3 {
+    margin: 0;
     font-size: 18px;
+  }
+  .panel-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.1rem;
+  }
+  .panel-x-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    border: none;
+    background: transparent;
+  }
+  .panel-x-btn:hover {
+    background: var(--panel-bg);
   }
   .setting-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
+    gap: 10px;
   }
   .setting-row:last-child { margin-bottom: 0; }
   .setting-row label {
@@ -172,12 +201,78 @@
     color: #fff;
     border-color: var(--accent);
   }
+  .switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch-track {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--border-strong);
+    border-radius: 24px;
+    transition: background 0.2s;
+  }
+  .switch-track:before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .switch input:checked + .switch-track {
+    background: var(--accent);
+  }
+  .switch input:checked + .switch-track:before {
+    transform: translateX(18px);
+  }
+  #customTextArea {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+  }
+  .setting-block {
+    margin-bottom: 14px;
+  }
+  .setting-block:last-child { margin-bottom: 0; }
+  .setting-block-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .setting-block-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .setting-block-actions button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
   .stats {
     display: flex;
     justify-content: space-between;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--text-secondary);
     margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 6px 12px;
   }
   .stats span b {
     color: var(--text-primary);
@@ -233,23 +328,11 @@
   .cursor { border-left: 2px solid var(--accent); }
   .pending { color: var(--text-muted); }
 
-  #resultsOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  #resultsOverlay.open { display: flex; }
   #resultsCard {
     background: var(--card-bg);
     border-radius: 16px;
     padding: 2rem;
-    max-width: 420px;
+    max-width: 440px;
     width: 100%;
     text-align: center;
     box-shadow: 0 8px 30px rgba(0,0,0,0.25);
@@ -286,6 +369,14 @@
     text-transform: uppercase;
     letter-spacing: 0.03em;
   }
+  #wpmGraph {
+    width: 100%;
+    height: 90px;
+    display: block;
+    margin: 0.5rem 0 1rem;
+    border-radius: 8px;
+    background: var(--panel-bg);
+  }
   #resultsBest {
     font-size: 13px;
     color: var(--text-muted);
@@ -297,31 +388,127 @@
     border-color: var(--accent);
     padding: 10px 24px;
   }
+  #historyTable, #leaderboardTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  #historyTable th, #historyTable td, #leaderboardTable th, #leaderboardTable td {
+    text-align: left;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  #historyTable th, #leaderboardTable th {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  #historyEmpty, #leaderboardEmpty, #leaderboardLoading {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 1rem 0;
+  }
+  #playerNameInput {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    width: 130px;
+  }
+  .leaderboard-duration-row {
+    margin-bottom: 12px;
+  }
+
+  @media (min-width: 900px) {
+    body {
+      padding: 40px;
+    }
+    .card {
+      max-width: 760px;
+      padding: 2.75rem;
+    }
+    h1 {
+      font-size: 24px;
+    }
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+    }
+    .stats {
+      font-size: 16px;
+    }
+    #textDisplay {
+      height: 210px;
+      padding: 1.5rem;
+      line-height: 2.1;
+    }
+    button {
+      font-size: 15px;
+      padding: 10px 22px;
+      cursor: pointer;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      transition: transform 0.1s;
+    }
+    #settingsPanel, #historyPanel, #leaderboardPanel {
+      max-width: 560px;
+      padding: 2rem;
+    }
+    #resultsCard {
+      max-width: 520px;
+      padding: 2.5rem;
+    }
+    .results-stats .value {
+      font-size: 34px;
+    }
+    #wpmGraph {
+      height: 120px;
+    }
+  }
+
+  @media (min-width: 1300px) {
+    .card {
+      max-width: 860px;
+    }
+    #textDisplay {
+      height: 240px;
+      font-size: 28px;
+    }
+  }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="header-row">
-    <h1>MAKI Typing test</h1>
-    <button id="settingsBtn" aria-label="Settings" title="Settings">&#9881;</button>
+    <h1>Typing speed test</h1>
+    <div class="header-btns">
+      <button class="icon-btn" id="leaderboardBtn" aria-label="Leaderboard" title="Leaderboard">&#127942;</button>
+      <button class="icon-btn" id="historyBtn" aria-label="History" title="History">&#128340;</button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">&#9881;</button>
+    </div>
   </div>
   <div class="stats">
     <span>WPM: <b id="wpm">0</b></span>
     <span>Best: <b id="bestWpm">0</b></span>
     <span>Accuracy: <b id="acc">100%</b></span>
     <span>Time left: <b id="time">120</b>s</span>
+    <span>Streak: <b id="streak">0</b></span>
   </div>
   <div id="textDisplay"></div>
   <input id="typeInput" type="text" placeholder="Start typing to begin the test" autocomplete="off" autocorrect="off" spellcheck="false" />
   <div class="actions">
     <button id="restartBtn">New test</button>
   </div>
-  <p id="msg">Tap the passage above, then start typing.</p>
+  <p id="msg">Tap the passage above, then start typing. (Tip: press Esc anytime to restart)</p>
 </div>
 
-<div id="resultsOverlay">
+<div id="resultsOverlay" class="modal-overlay">
   <div id="resultsCard">
-    <div class="highscore-banner" id="highscoreBanner">🎉 CONGRATULATIONS! New high score!</div>
+    <div class="highscore-banner" id="highscoreBanner">&#127881; CONGRATULATIONS! New high score!</div>
     <h2>Time's up!</h2>
     <div class="results-stats">
       <div>
@@ -333,14 +520,18 @@
         <span class="label">Accuracy</span>
       </div>
     </div>
+    <canvas id="wpmGraph" width="360" height="90"></canvas>
     <div id="resultsBest">Best WPM for this duration: <b id="resultBest">0</b></div>
     <button id="resultsCloseBtn">Try again</button>
   </div>
 </div>
 
-<div id="settingsOverlay">
+<div id="settingsOverlay" class="modal-overlay">
   <div id="settingsPanel">
-    <h3>Settings</h3>
+    <div class="panel-header-row">
+      <h3>Settings</h3>
+      <button class="panel-x-btn" id="settingsXBtn" aria-label="Close without saving" title="Close without saving">&#10005;</button>
+    </div>
     <div class="setting-row">
       <label>Duration</label>
       <div class="toggle-group" id="durationGroup">
@@ -367,6 +558,17 @@
       </select>
     </div>
     <div class="setting-row">
+      <label>Language</label>
+      <select id="languageSelect">
+        <option value="en" selected>English</option>
+        <option value="tl">Tagalog</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <label>Leaderboard name</label>
+      <input type="text" id="playerNameInput" maxlength="20" placeholder="Anonymous">
+    </div>
+    <div class="setting-row">
       <label>Theme</label>
       <div class="toggle-group" id="themeGroup">
         <button data-value="light" class="active">Light</button>
@@ -375,17 +577,95 @@
         <button data-value="ocean">Ocean</button>
       </div>
     </div>
+    <div class="setting-row">
+      <label>Sound effects</label>
+      <label class="switch">
+        <input type="checkbox" id="soundToggle" checked>
+        <span class="switch-track"></span>
+      </label>
+    </div>
+    <div class="setting-row">
+      <label>Punctuation &amp; numbers</label>
+      <label class="switch">
+        <input type="checkbox" id="punctuationToggle">
+        <span class="switch-track"></span>
+      </label>
+    </div>
+    <div class="setting-block">
+      <label class="setting-block-label">Custom text (optional)</label>
+      <textarea id="customTextArea" placeholder="Paste your own paragraph here to practice typing it instead of random words..."></textarea>
+      <div class="setting-block-actions">
+        <button id="useCustomTextBtn">Use this text</button>
+        <button id="clearCustomTextBtn">Clear</button>
+      </div>
+    </div>
     <div class="actions">
       <button id="settingsCloseBtn">Done</button>
     </div>
   </div>
 </div>
+
+<div id="historyOverlay" class="modal-overlay">
+  <div id="historyPanel">
+    <h3>History</h3>
+    <div id="historyEmpty">No completed tests yet.</div>
+    <table id="historyTable" style="display:none;">
+      <thead>
+        <tr><th>Date</th><th>Duration</th><th>WPM</th><th>Acc</th></tr>
+      </thead>
+      <tbody id="historyTableBody"></tbody>
+    </table>
+    <div class="actions">
+      <button id="clearHistoryBtn">Clear history</button>
+      <button id="historyCloseBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<div id="leaderboardOverlay" class="modal-overlay">
+  <div id="leaderboardPanel">
+    <div class="panel-header-row">
+      <h3>Leaderboard</h3>
+      <button class="panel-x-btn" id="leaderboardXBtn" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="leaderboard-duration-row">
+      <div class="toggle-group" id="leaderboardDurationGroup">
+        <button data-value="30">30s</button>
+        <button data-value="60">60s</button>
+        <button data-value="120" class="active">2 min</button>
+        <button data-value="300">5 min</button>
+      </div>
+    </div>
+    <div id="leaderboardLoading">Loading...</div>
+    <div id="leaderboardEmpty" style="display:none;">No scores yet for this duration. Be the first!</div>
+    <table id="leaderboardTable" style="display:none;">
+      <thead>
+        <tr><th>#</th><th>Name</th><th>WPM</th><th>Acc</th></tr>
+      </thead>
+      <tbody id="leaderboardTableBody"></tbody>
+    </table>
+    <div class="actions">
+      <button id="refreshLeaderboardBtn">Refresh</button>
+      <button id="leaderboardCloseBtn">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
-  var wordBank = ["time","people","water","world","family","student","country","problem","music","system","program","question","government","company","number","group","idea","fact","month","room","market","service","body","president","area","school","history","party","result","change","morning","reason","research","girl","guy","moment","air","teacher","force","education","science","level","office","door","health","art","type","evening","policy","road","form","relationship","story","issue","side","kind","four","head","picture","effort","law","case","hair","child","information","oil","effect","point","director","position","player","record","chance","voice","matter","lot","light","development","language","control","heart","nature","building","action","century","evidence","gas","author","order","piece","expert","hand","future","paper","term","color","home","interest","land","view","chair","condition","fish","cost","industry","figure","street","image","phone","court","hospital","memory","letter","garden","weather","dinner","design","travel","project","budget","dream","choice","danger","freedom","journey","harbor","forest","mountain","valley","desert","island","ocean","planet","engine","bridge","castle","mirror","window","pocket","button","needle","thread","hammer","ladder","basket","candle","blanket","pillow","kitchen","bicycle","umbrella","tunnel","volcano","glacier","meadow","orchard","harvest","festival","carnival","theater","museum","library","stadium","airport","station","factory","village","suburb"];
+  var wordBankEn = ["time","people","water","world","family","student","country","problem","music","system","program","question","government","company","number","group","idea","fact","month","room","market","service","body","president","area","school","history","party","result","change","morning","reason","research","girl","guy","moment","air","teacher","force","education","science","level","office","door","health","art","type","evening","policy","road","form","relationship","story","issue","side","kind","four","head","picture","effort","law","case","hair","child","information","oil","effect","point","director","position","player","record","chance","voice","matter","lot","light","development","language","control","heart","nature","building","action","century","evidence","gas","author","order","piece","expert","hand","future","paper","term","color","home","interest","land","view","chair","condition","fish","cost","industry","figure","street","image","phone","court","hospital","memory","letter","garden","weather","dinner","design","travel","project","budget","dream","choice","danger","freedom","journey","harbor","forest","mountain","valley","desert","island","ocean","planet","engine","bridge","castle","mirror","window","pocket","button","needle","thread","hammer","ladder","basket","candle","blanket","pillow","kitchen","bicycle","umbrella","tunnel","volcano","glacier","meadow","orchard","harvest","festival","carnival","theater","museum","library","stadium","airport","station","factory","village","suburb"];
 
+  var wordBankTl = ["ako","ikaw","siya","kami","tayo","kayo","sila","bahay","pamilya","kaibigan","trabaho","paaralan","mahal","gutom","uhaw","tulog","gising","kumain","inom","laro","sayaw","awit","saya","lungkot","galit","takot","buhay","panahon","ulan","araw","buwan","bituin","dagat","bundok","ilog","puno","bulaklak","hayop","ibon","isda","pusa","aso","pagkain","kanin","tubig","gamot","ospital","guro","estudyante","libro","sulat","salita","wika","bansa","lungsod","bayan","daan","sasakyan","biyahe","pera","negosyo","oras","umaga","hapon","gabi","kahapon","ngayon","bukas","linggo","taon","ina","ama","kapatid","anak","lolo","lola","asawa","kapitbahay","doktor","pulis","sundalo","magsasaka","mangingisda","negosyante","manggagawa","bata","matanda","binata","dalaga","bansa","kalye","palengke","tindahan","kalsada","paligo","almusal","tanghalian","hapunan","kape","tsaa","asukal","asin","paminta","sibuyas","bawang","kamatis"];
+
+  var wordBank = wordBankEn;
   var shortWords = wordBank.filter(function(w){ return w.length <= 5; });
   var longWords = wordBank.filter(function(w){ return w.length >= 7; });
+
+  function refreshWordLists(){
+    wordBank = (language === 'tl') ? wordBankTl : wordBankEn;
+    shortWords = wordBank.filter(function(w){ return w.length <= 5; });
+    longWords = wordBank.filter(function(w){ return w.length >= 7; });
+  }
 
   var display = document.getElementById('textDisplay');
   var input = document.getElementById('typeInput');
@@ -393,48 +673,189 @@
   var bestWpmEl = document.getElementById('bestWpm');
   var accEl = document.getElementById('acc');
   var timeEl = document.getElementById('time');
+  var streakEl = document.getElementById('streak');
   var msgEl = document.getElementById('msg');
   var restartBtn = document.getElementById('restartBtn');
   var settingsBtn = document.getElementById('settingsBtn');
   var settingsOverlay = document.getElementById('settingsOverlay');
-  var settingsPanel = document.getElementById('settingsPanel');
   var settingsCloseBtn = document.getElementById('settingsCloseBtn');
+  var settingsXBtn = document.getElementById('settingsXBtn');
   var durationGroup = document.getElementById('durationGroup');
   var sizeGroup = document.getElementById('sizeGroup');
   var difficultySelect = document.getElementById('difficultySelect');
+  var languageSelect = document.getElementById('languageSelect');
   var themeGroup = document.getElementById('themeGroup');
+  var soundToggle = document.getElementById('soundToggle');
+  var punctuationToggle = document.getElementById('punctuationToggle');
+  var customTextArea = document.getElementById('customTextArea');
+  var useCustomTextBtn = document.getElementById('useCustomTextBtn');
+  var clearCustomTextBtn = document.getElementById('clearCustomTextBtn');
   var resultsOverlay = document.getElementById('resultsOverlay');
   var resultsCloseBtn = document.getElementById('resultsCloseBtn');
   var highscoreBanner = document.getElementById('highscoreBanner');
   var resultWpm = document.getElementById('resultWpm');
   var resultAcc = document.getElementById('resultAcc');
   var resultBest = document.getElementById('resultBest');
+  var wpmGraphCanvas = document.getElementById('wpmGraph');
+  var historyBtn = document.getElementById('historyBtn');
+  var historyOverlay = document.getElementById('historyOverlay');
+  var historyCloseBtn = document.getElementById('historyCloseBtn');
+  var clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  var historyTable = document.getElementById('historyTable');
+  var historyTableBody = document.getElementById('historyTableBody');
+  var historyEmpty = document.getElementById('historyEmpty');
+  var playerNameInput = document.getElementById('playerNameInput');
+  var leaderboardBtn = document.getElementById('leaderboardBtn');
+  var leaderboardOverlay = document.getElementById('leaderboardOverlay');
+  var leaderboardXBtn = document.getElementById('leaderboardXBtn');
+  var leaderboardCloseBtn = document.getElementById('leaderboardCloseBtn');
+  var refreshLeaderboardBtn = document.getElementById('refreshLeaderboardBtn');
+  var leaderboardDurationGroup = document.getElementById('leaderboardDurationGroup');
+  var leaderboardLoading = document.getElementById('leaderboardLoading');
+  var leaderboardEmpty = document.getElementById('leaderboardEmpty');
+  var leaderboardTable = document.getElementById('leaderboardTable');
+  var leaderboardTableBody = document.getElementById('leaderboardTableBody');
 
   var TOTAL_TIME = 120;
   var WORDS_PER_SECOND_BUFFER = 3;
   var difficulty = 'any';
+  var language = 'en';
+  var soundEnabled = true;
+  var punctuationMode = false;
+  var customText = '';
+  var playerName = '';
+  var leaderboardViewDuration = 120;
   var target = '';
   var startTime = null;
   var timerInterval = null;
   var timeLeft = TOTAL_TIME;
   var finished = false;
+  var wpmSamples = [];
+  var settingsSnapshot = null;
 
   var SETTINGS_KEY = 'maki-tp-settings';
+  var HISTORY_KEY = 'maki-tp-history';
+  var STREAK_KEY = 'maki-tp-streak';
 
-  function saveSettings(){
+  var audioCtx = null;
+  function getAudioCtx(){
+    if(!audioCtx){
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch(e){
+        return null;
+      }
+    }
+    return audioCtx;
+  }
+
+  function beep(freq, duration, type){
+    if(!soundEnabled) return;
+    var ctx = getAudioCtx();
+    if(!ctx) return;
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  }
+
+  function playClickSound(){ beep(700, 0.03, 'square'); }
+  function playErrorSound(){ beep(180, 0.08, 'sawtooth'); }
+  function playFinishSound(){
+    beep(523, 0.12, 'sine');
+    setTimeout(function(){ beep(784, 0.18, 'sine'); }, 120);
+  }
+
+  function buildSettingsObject(){
     var textSize = display.style.fontSize || '24px';
     var themeClass = 'light';
     if(document.body.classList.contains('theme-dark')) themeClass = 'dark';
     else if(document.body.classList.contains('theme-sepia')) themeClass = 'sepia';
     else if(document.body.classList.contains('theme-ocean')) themeClass = 'ocean';
 
-    var settings = {
+    return {
       duration: TOTAL_TIME,
       textSize: textSize,
       difficulty: difficulty,
-      theme: themeClass
+      language: language,
+      theme: themeClass,
+      sound: soundEnabled,
+      punctuation: punctuationMode,
+      customText: customText,
+      playerName: playerName
     };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  function saveSettings(){
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(buildSettingsObject()));
+  }
+
+  function setActiveButton(group, btn){
+    var buttons = group.querySelectorAll('button');
+    for(var i = 0; i < buttons.length; i++){
+      buttons[i].classList.remove('active');
+    }
+    btn.classList.add('active');
+  }
+
+  function applySettings(settings){
+    if(!settings) return;
+
+    if(settings.duration){
+      TOTAL_TIME = settings.duration;
+      timeLeft = TOTAL_TIME;
+      var durBtn = durationGroup.querySelector('button[data-value="' + settings.duration + '"]');
+      if(durBtn) setActiveButton(durationGroup, durBtn);
+    }
+
+    if(settings.textSize){
+      display.style.fontSize = settings.textSize;
+      var sizeValue = parseInt(settings.textSize, 10);
+      var sizeBtn = sizeGroup.querySelector('button[data-value="' + sizeValue + '"]');
+      if(sizeBtn) setActiveButton(sizeGroup, sizeBtn);
+    }
+
+    if(settings.difficulty){
+      difficulty = settings.difficulty;
+      difficultySelect.value = settings.difficulty;
+    }
+
+    if(settings.language){
+      language = settings.language;
+      languageSelect.value = settings.language;
+      refreshWordLists();
+    }
+
+    if(settings.theme){
+      document.body.classList.remove('theme-dark', 'theme-sepia', 'theme-ocean');
+      if(settings.theme !== 'light'){
+        document.body.classList.add('theme-' + settings.theme);
+      }
+      var themeBtn = themeGroup.querySelector('button[data-value="' + settings.theme + '"]');
+      if(themeBtn) setActiveButton(themeGroup, themeBtn);
+    }
+
+    if(typeof settings.sound === 'boolean'){
+      soundEnabled = settings.sound;
+      soundToggle.checked = soundEnabled;
+    }
+
+    if(typeof settings.punctuation === 'boolean'){
+      punctuationMode = settings.punctuation;
+      punctuationToggle.checked = punctuationMode;
+    }
+
+    customText = settings.customText || '';
+    customTextArea.value = customText;
+
+    playerName = settings.playerName || '';
+    playerNameInput.value = playerName;
   }
 
   function loadSettings(){
@@ -446,34 +867,7 @@
     } catch(e){
       return;
     }
-
-    if(settings.duration){
-      TOTAL_TIME = settings.duration;
-      timeLeft = TOTAL_TIME;
-      var durBtn = durationGroup.querySelector('button[data-value="' + settings.duration + '"]');
-      if(durBtn) setActiveButtonQuiet(durationGroup, durBtn);
-    }
-
-    if(settings.textSize){
-      display.style.fontSize = settings.textSize;
-      var sizeValue = parseInt(settings.textSize, 10);
-      var sizeBtn = sizeGroup.querySelector('button[data-value="' + sizeValue + '"]');
-      if(sizeBtn) setActiveButtonQuiet(sizeGroup, sizeBtn);
-    }
-
-    if(settings.difficulty){
-      difficulty = settings.difficulty;
-      difficultySelect.value = settings.difficulty;
-    }
-
-    if(settings.theme){
-      document.body.classList.remove('theme-dark', 'theme-sepia', 'theme-ocean');
-      if(settings.theme !== 'light'){
-        document.body.classList.add('theme-' + settings.theme);
-      }
-      var themeBtn = themeGroup.querySelector('button[data-value="' + settings.theme + '"]');
-      if(themeBtn) setActiveButtonQuiet(themeGroup, themeBtn);
-    }
+    applySettings(settings);
   }
 
   function highScoreKey(){
@@ -495,7 +889,7 @@
     return wordBank;
   }
 
-    function shuffleArray(arr){
+  function shuffleArray(arr){
     var copy = arr.slice();
     for(var i = copy.length - 1; i > 0; i--){
       var j = Math.floor(Math.random() * (i + 1));
@@ -506,10 +900,61 @@
     return copy;
   }
 
+  function applyPunctuation(words){
+    var result = [];
+    var sinceComma = 0;
+    var sinceSentenceEnd = 0;
+    var capNext = true;
+    for(var i = 0; i < words.length; i++){
+      var w = words[i];
+
+      if(Math.random() < 0.04){
+        w = String(Math.floor(Math.random() * 999) + 1);
+      }
+
+      if(capNext){
+        w = w.charAt(0).toUpperCase() + w.slice(1);
+        capNext = false;
+      }
+
+      sinceComma++;
+      sinceSentenceEnd++;
+
+      if(sinceSentenceEnd >= 7 + Math.floor(Math.random() * 6)){
+        w += '.';
+        sinceSentenceEnd = 0;
+        sinceComma = 0;
+        capNext = true;
+      } else if(sinceComma >= 3 + Math.floor(Math.random() * 4) && Math.random() < 0.5){
+        w += ',';
+        sinceComma = 0;
+      }
+
+      result.push(w);
+    }
+    if(result.length && !/[.]$/.test(result[result.length - 1])){
+      result[result.length - 1] += '.';
+    }
+    return result;
+  }
+
   function buildTarget(){
-    var list = currentWordList();
     var wordCount = Math.max(40, TOTAL_TIME * WORDS_PER_SECOND_BUFFER);
     var arr = [];
+
+    if(customText && customText.trim().length > 0){
+      var customWords = customText.trim().split(/\s+/).filter(Boolean);
+      if(customWords.length > 0){
+        var idx = 0;
+        while(arr.length < wordCount){
+          arr.push(customWords[idx % customWords.length]);
+          idx++;
+        }
+        return arr.join(' ');
+      }
+    }
+
+    var list = currentWordList();
     var bag = [];
     var lastWord = null;
 
@@ -526,6 +971,10 @@
       var word = bag.shift();
       arr.push(word);
       lastWord = word;
+    }
+
+    if(punctuationMode){
+      arr = applyPunctuation(arr);
     }
 
     return arr.join(' ');
@@ -568,6 +1017,178 @@
     return typed.length ? Math.round((correct / typed.length) * 100) : 100;
   }
 
+  function drawWpmGraph(samples){
+    var ctx = wpmGraphCanvas.getContext('2d');
+    var w = wpmGraphCanvas.width;
+    var h = wpmGraphCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    if(samples.length < 2){
+      return;
+    }
+
+    var maxWpm = Math.max.apply(null, samples);
+    if(maxWpm < 10) maxWpm = 10;
+    var stepX = w / (samples.length - 1);
+
+    var computedStyle = getComputedStyle(document.body);
+    var accentColor = computedStyle.getPropertyValue('--accent').trim() || '#378ADD';
+
+    ctx.beginPath();
+    ctx.strokeStyle = accentColor;
+    ctx.lineWidth = 2;
+    for(var i = 0; i < samples.length; i++){
+      var x = i * stepX;
+      var y = h - (samples[i] / maxWpm) * (h - 10) - 5;
+      if(i === 0){
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = accentColor;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function todayString(){
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  function updateStreak(){
+    var raw = localStorage.getItem(STREAK_KEY);
+    var data = { lastDate: null, streak: 0 };
+    if(raw){
+      try { data = JSON.parse(raw); } catch(e){}
+    }
+
+    var today = todayString();
+    if(data.lastDate === today){
+      // already counted today, no change
+    } else {
+      var yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      var yStr = yesterday.getFullYear() + '-' + (yesterday.getMonth() + 1) + '-' + yesterday.getDate();
+
+      if(data.lastDate === yStr){
+        data.streak = (data.streak || 0) + 1;
+      } else {
+        data.streak = 1;
+      }
+      data.lastDate = today;
+      localStorage.setItem(STREAK_KEY, JSON.stringify(data));
+    }
+
+    streakEl.textContent = data.streak;
+  }
+
+  function loadStreakDisplay(){
+    var raw = localStorage.getItem(STREAK_KEY);
+    if(!raw){
+      streakEl.textContent = '0';
+      return;
+    }
+    try {
+      var data = JSON.parse(raw);
+      streakEl.textContent = data.streak || 0;
+    } catch(e){
+      streakEl.textContent = '0';
+    }
+  }
+
+  function pushHistory(record){
+    var raw = localStorage.getItem(HISTORY_KEY);
+    var list = [];
+    if(raw){
+      try { list = JSON.parse(raw); } catch(e){ list = []; }
+    }
+    list.unshift(record);
+    if(list.length > 20) list = list.slice(0, 20);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  }
+
+  function renderHistory(){
+    var raw = localStorage.getItem(HISTORY_KEY);
+    var list = [];
+    if(raw){
+      try { list = JSON.parse(raw); } catch(e){ list = []; }
+    }
+
+    if(list.length === 0){
+      historyEmpty.style.display = 'block';
+      historyTable.style.display = 'none';
+      return;
+    }
+
+    historyEmpty.style.display = 'none';
+    historyTable.style.display = 'table';
+    historyTableBody.innerHTML = '';
+    for(var i = 0; i < list.length; i++){
+      var r = list[i];
+      var row = document.createElement('tr');
+      row.innerHTML = '<td>' + r.date + '</td><td>' + r.durationLabel + '</td><td>' + r.wpm + '</td><td>' + r.acc + '%</td>';
+      historyTableBody.appendChild(row);
+    }
+  }
+
+  function submitToLeaderboard(wpm, acc){
+    var nameToUse = playerName && playerName.trim() ? playerName.trim() : 'Anonymous';
+    fetch('/.netlify/functions/leaderboard?duration=' + TOTAL_TIME, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nameToUse, wpm: wpm, acc: acc })
+    }).catch(function(){});
+  }
+
+  function fetchLeaderboard(duration){
+    leaderboardLoading.style.display = 'block';
+    leaderboardEmpty.style.display = 'none';
+    leaderboardTable.style.display = 'none';
+
+    fetch('/.netlify/functions/leaderboard?duration=' + duration)
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        leaderboardLoading.style.display = 'none';
+        var scores = (data && data.scores) ? data.scores : [];
+        renderLeaderboard(scores);
+      })
+      .catch(function(){
+        leaderboardLoading.style.display = 'none';
+        leaderboardEmpty.textContent = 'Could not load leaderboard. Try again later.';
+        leaderboardEmpty.style.display = 'block';
+      });
+  }
+
+  function renderLeaderboard(scores){
+    if(!scores || scores.length === 0){
+      leaderboardEmpty.textContent = 'No scores yet for this duration. Be the first!';
+      leaderboardEmpty.style.display = 'block';
+      leaderboardTable.style.display = 'none';
+      return;
+    }
+
+    leaderboardEmpty.style.display = 'none';
+    leaderboardTable.style.display = 'table';
+    leaderboardTableBody.innerHTML = '';
+    for(var i = 0; i < scores.length; i++){
+      var s = scores[i];
+      var row = document.createElement('tr');
+      var safeName = String(s.name || 'Anonymous')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      row.innerHTML = '<td>' + (i + 1) + '</td><td>' + safeName + '</td><td>' + s.wpm + '</td><td>' + s.acc + '%</td>';
+      leaderboardTableBody.appendChild(row);
+    }
+  }
+
   function finishTest(){
     if(finished) return;
     finished = true;
@@ -587,6 +1208,8 @@
     accEl.textContent = acc + '%';
     msgEl.textContent = 'Time up! ' + wpm + ' WPM at ' + acc + '% accuracy.';
 
+    playFinishSound();
+
     var best = getHighScore();
     var isNewHigh = wpm > best;
     if(isNewHigh){
@@ -600,13 +1223,27 @@
     resultBest.textContent = best;
     highscoreBanner.classList.toggle('show', isNewHigh);
     resultsOverlay.classList.add('open');
+
+    drawWpmGraph(wpmSamples);
+    updateStreak();
+
+    pushHistory({
+      date: new Date().toLocaleString(),
+      durationLabel: durationLabel(),
+      wpm: wpm,
+      acc: acc
+    });
+
+    if(wpm > 0){
+      submitToLeaderboard(wpm, acc);
+    }
   }
 
   function durationLabel(){
-    if(TOTAL_TIME === 60) return '1 minute';
-    if(TOTAL_TIME === 120) return '2 minutes';
-    if(TOTAL_TIME === 300) return '5 minutes';
-    return TOTAL_TIME + ' seconds';
+    if(TOTAL_TIME === 60) return '1 min';
+    if(TOTAL_TIME === 120) return '2 min';
+    if(TOTAL_TIME === 300) return '5 min';
+    return TOTAL_TIME + 's';
   }
 
   function startTest(){
@@ -615,13 +1252,14 @@
     finished = false;
     startTime = null;
     timeLeft = TOTAL_TIME;
+    wpmSamples = [];
     input.value = '';
     input.disabled = false;
     wpmEl.textContent = '0';
     bestWpmEl.textContent = getHighScore();
     accEl.textContent = '100%';
     timeEl.textContent = TOTAL_TIME;
-    msgEl.textContent = 'Tap the passage above, then start typing.';
+    msgEl.textContent = 'Tap the passage above, then start typing. (Tip: press Esc anytime to restart)';
     resultsOverlay.classList.remove('open');
     renderText('');
     input.focus();
@@ -630,6 +1268,15 @@
   input.addEventListener('input', function(){
     if(finished) return;
     var typed = input.value;
+    var lastIndex = typed.length - 1;
+
+    if(lastIndex >= 0 && lastIndex < target.length){
+      if(typed[lastIndex] === target[lastIndex]){
+        playClickSound();
+      } else {
+        playErrorSound();
+      }
+    }
 
     if(startTime === null){
       startTime = performance.now();
@@ -643,7 +1290,9 @@
           for(var i = 0; i < typedNow.length; i++){
             if(typedNow[i] === target[i]) correctNow++;
           }
-          wpmEl.textContent = Math.round((correctNow / 5) / elapsedMinutes);
+          var liveWpm = Math.round((correctNow / 5) / elapsedMinutes);
+          wpmEl.textContent = liveWpm;
+          wpmSamples.push(liveWpm);
         }
         if(timeLeft <= 0){
           finishTest();
@@ -660,6 +1309,7 @@
   });
 
   settingsBtn.addEventListener('click', function(){
+    settingsSnapshot = buildSettingsObject();
     settingsOverlay.classList.add('open');
   });
 
@@ -667,17 +1317,28 @@
     settingsOverlay.classList.remove('open');
   });
 
-  function setActiveButton(group, btn){
-    var buttons = group.querySelectorAll('button');
-    for(var i = 0; i < buttons.length; i++){
-      buttons[i].classList.remove('active');
+  settingsXBtn.addEventListener('click', function(){
+    if(settingsSnapshot){
+      applySettings(settingsSnapshot);
+      saveSettings();
+      startTest();
     }
-    btn.classList.add('active');
-  }
+    settingsOverlay.classList.remove('open');
+  });
 
-  function setActiveButtonQuiet(group, btn){
-    setActiveButton(group, btn);
-  }
+  historyBtn.addEventListener('click', function(){
+    renderHistory();
+    historyOverlay.classList.add('open');
+  });
+
+  historyCloseBtn.addEventListener('click', function(){
+    historyOverlay.classList.remove('open');
+  });
+
+  clearHistoryBtn.addEventListener('click', function(){
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  });
 
   durationGroup.addEventListener('click', function(e){
     var btn = e.target.closest('button');
@@ -704,6 +1365,13 @@
     startTest();
   });
 
+  languageSelect.addEventListener('change', function(){
+    language = languageSelect.value;
+    refreshWordLists();
+    saveSettings();
+    startTest();
+  });
+
   themeGroup.addEventListener('click', function(e){
     var btn = e.target.closest('button');
     if(!btn) return;
@@ -714,6 +1382,68 @@
     }
     setActiveButton(themeGroup, btn);
     saveSettings();
+  });
+
+  soundToggle.addEventListener('change', function(){
+    soundEnabled = soundToggle.checked;
+    saveSettings();
+  });
+
+  punctuationToggle.addEventListener('change', function(){
+    punctuationMode = punctuationToggle.checked;
+    saveSettings();
+    startTest();
+  });
+
+  useCustomTextBtn.addEventListener('click', function(){
+    customText = customTextArea.value;
+    saveSettings();
+    startTest();
+    settingsOverlay.classList.remove('open');
+  });
+
+  clearCustomTextBtn.addEventListener('click', function(){
+    customText = '';
+    customTextArea.value = '';
+    saveSettings();
+    startTest();
+  });
+
+  playerNameInput.addEventListener('change', function(){
+    playerName = playerNameInput.value;
+    saveSettings();
+  });
+
+  leaderboardBtn.addEventListener('click', function(){
+    leaderboardOverlay.classList.add('open');
+    var activeBtn = leaderboardDurationGroup.querySelector('button[data-value="' + TOTAL_TIME + '"]');
+    if(activeBtn){
+      setActiveButton(leaderboardDurationGroup, activeBtn);
+      leaderboardViewDuration = TOTAL_TIME;
+    } else {
+      leaderboardViewDuration = parseInt(leaderboardDurationGroup.querySelector('button.active').getAttribute('data-value'), 10);
+    }
+    fetchLeaderboard(leaderboardViewDuration);
+  });
+
+  leaderboardDurationGroup.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    setActiveButton(leaderboardDurationGroup, btn);
+    leaderboardViewDuration = parseInt(btn.getAttribute('data-value'), 10);
+    fetchLeaderboard(leaderboardViewDuration);
+  });
+
+  refreshLeaderboardBtn.addEventListener('click', function(){
+    fetchLeaderboard(leaderboardViewDuration);
+  });
+
+  leaderboardCloseBtn.addEventListener('click', function(){
+    leaderboardOverlay.classList.remove('open');
+  });
+
+  leaderboardXBtn.addEventListener('click', function(){
+    leaderboardOverlay.classList.remove('open');
   });
 
   display.addEventListener('click', function(){
@@ -728,9 +1458,22 @@
     display.classList.remove('focused');
   });
 
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      settingsOverlay.classList.remove('open');
+      historyOverlay.classList.remove('open');
+      leaderboardOverlay.classList.remove('open');
+      startTest();
+    } else if(e.key === 'Tab'){
+      e.preventDefault();
+      startTest();
+    }
+  });
+
   restartBtn.addEventListener('click', startTest);
   resultsCloseBtn.addEventListener('click', startTest);
   loadSettings();
+  loadStreakDisplay();
   startTest();
 })();
 

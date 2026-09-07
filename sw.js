@@ -1,4 +1,4 @@
-var CACHE_NAME = 'typing-test-v3';
+var CACHE_NAME = 'typing-test-v4';
 var FILES_TO_CACHE = [
   './',
   './index.html',
@@ -33,6 +33,30 @@ self.addEventListener('fetch', function(event){
 
   if(url.indexOf('/.netlify/functions/') !== -1){
     event.respondWith(fetch(event.request));
+    return;
+  }
+
+  var isPageRequest = event.request.mode === 'navigate' ||
+    url.indexOf('index.html') !== -1 ||
+    url.indexOf('manifest.json') !== -1 ||
+    url.indexOf('sw.js') !== -1;
+
+  if(isPageRequest){
+    event.respondWith(
+      fetch(event.request).then(function(response){
+        if(response && response.ok){
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache){
+            cache.put(event.request, clone);
+          });
+        }
+        return response;
+      }).catch(function(){
+        return caches.match(event.request).then(function(cached){
+          return cached || caches.match('./index.html');
+        });
+      })
+    );
     return;
   }
 

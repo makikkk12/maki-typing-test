@@ -499,7 +499,7 @@
     <span>Streak: <b id="streak">0</b></span>
   </div>
   <div id="textDisplay"></div>
-  <input id="typeInput" type="text" placeholder="Start typing to begin the test" autocomplete="off" autocorrect="off" spellcheck="false" />
+  <input id="typeInput" type="text" placeholder="Start typing to begin the test" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
   <div class="actions">
     <button id="restartBtn">New test</button>
   </div>
@@ -1138,12 +1138,23 @@
     }
   }
 
+  var CLIENT_ID_KEY = 'maki-tp-client-id';
+
+  function getClientId(){
+    var id = localStorage.getItem(CLIENT_ID_KEY);
+    if(!id){
+      id = 'c-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(CLIENT_ID_KEY, id);
+    }
+    return id;
+  }
+
   function submitToLeaderboard(wpm, acc){
     var nameToUse = playerName && playerName.trim() ? playerName.trim() : 'Anonymous';
     fetch('/.netlify/functions/leaderboard?duration=' + TOTAL_TIME, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: nameToUse, wpm: wpm, acc: acc })
+      body: JSON.stringify({ name: nameToUse, wpm: wpm, acc: acc, clientId: getClientId() })
     }).catch(function(){});
   }
 

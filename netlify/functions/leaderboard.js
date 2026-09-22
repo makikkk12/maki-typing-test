@@ -1,7 +1,18 @@
 var getStore = require('@netlify/blobs').getStore;
 
+function getLeaderboardStore(){
+  var siteID = process.env.NETLIFY_BLOBS_SITE_ID;
+  var token = process.env.NETLIFY_BLOBS_TOKEN;
+
+  if(siteID && token){
+    return getStore({ name: 'leaderboard', siteID: siteID, token: token });
+  }
+
+  return getStore('leaderboard');
+}
+
 exports.handler = async function(event) {
-  var store = getStore('leaderboard');
+  var store = getLeaderboardStore();
   var params = event.queryStringParameters || {};
   var duration = params.duration || '120';
   var key = 'scores-' + duration;

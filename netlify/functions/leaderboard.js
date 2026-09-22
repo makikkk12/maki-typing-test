@@ -39,6 +39,7 @@ exports.handler = async function(event) {
     try {
       var body = JSON.parse(event.body || '{}');
       var name = String(body.name || 'Anonymous').slice(0, 20).trim() || 'Anonymous';
+      var clientId = String(body.clientId || '').slice(0, 64).trim();
       var wpm = parseInt(body.wpm, 10);
       var acc = parseInt(body.acc, 10);
 
@@ -58,12 +59,42 @@ exports.handler = async function(event) {
         existing = [];
       }
 
-      existing.push({
-        name: name,
-        wpm: wpm,
-        acc: acc,
-        date: new Date().toISOString()
-      });
+      if (clientId) {
+        var matchIndex = -1;
+        for (var i = 0; i < existing.length; i++) {
+          if (existing[i].clientId === clientId) {
+            matchIndex = i;
+            break;
+          }
+        }
+
+        if (matchIndex !== -1) {
+          if (wpm > existing[matchIndex].wpm) {
+            existing[matchIndex] = {
+              clientId: clientId,
+              name: name,
+              wpm: wpm,
+              acc: acc,
+              date: new Date().toISOString()
+            };
+          }
+        } else {
+          existing.push({
+            clientId: clientId,
+            name: name,
+            wpm: wpm,
+            acc: acc,
+            date: new Date().toISOString()
+          });
+        }
+      } else {
+        existing.push({
+          name: name,
+          wpm: wpm,
+          acc: acc,
+          date: new Date().toISOString()
+        });
+      }
 
       existing.sort(function(a, b){ return b.wpm - a.wpm; });
       existing = existing.slice(0, 50);

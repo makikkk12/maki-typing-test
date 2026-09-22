@@ -18,6 +18,28 @@ exports.handler = async function(event) {
   var key = 'scores-' + duration;
 
   if (event.httpMethod === 'GET') {
+    if (params.action === 'clear') {
+      var adminKey = process.env.LEADERBOARD_ADMIN_KEY;
+      if (!adminKey || params.key !== adminKey) {
+        return {
+          statusCode: 403,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'Invalid or missing key' })
+        };
+      }
+
+      var durationsToClear = (duration === 'all') ? ['30', '60', '120', '300'] : [duration];
+      for (var d = 0; d < durationsToClear.length; d++) {
+        await store.setJSON('scores-' + durationsToClear[d], []);
+      }
+
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ok: true, cleared: durationsToClear })
+      };
+    }
+
     try {
       var raw = await store.get(key, { type: 'json' });
       var scores = raw || [];
